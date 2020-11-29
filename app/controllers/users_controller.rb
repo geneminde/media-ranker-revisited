@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  has_many :works
+
   def index
     @users = User.all
   end
