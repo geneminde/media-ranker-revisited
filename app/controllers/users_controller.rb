@@ -17,6 +17,8 @@ class UsersController < ApplicationController
       user = User.build_user(auth_hash)
       if user.save
         flash[:success] = "Logged in as new user #{user.username}"
+      else
+        flash[:error] = "Coult not create new user account: #{user.errors.messages}"
         return redirect_to root_path
       end
     end

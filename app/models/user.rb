@@ -3,6 +3,7 @@ class User < ApplicationRecord
   has_many :ranked_works, through: :votes, source: :work
 
   validates :username, uniqueness: true, presence: true
+  validates :uid, presence: true
 
   def self.build_user(auth_hash)
     user = User.new
