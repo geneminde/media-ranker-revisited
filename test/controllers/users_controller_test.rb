@@ -5,9 +5,8 @@ describe UsersController do
     it "logs in an existing user and redirects to root" do
       start_count = User.count
       user = users(:dan)
-      OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new(mock_auth_hash(user))
 
-      get auth_callback_path(:github)
+      perform_login(user)
       must_redirect_to root_path
 
       _(session[:user_id]).must_equal user.id
@@ -18,9 +17,7 @@ describe UsersController do
       start_count = User.count
       user = User.new(provider: "github", uid: 112233, email: "email@email.com", username: "Kitty")
 
-      OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new(mock_auth_hash(user))
-
-      get auth_callback_path(:github)
+      perform_login(user)
       must_redirect_to root_path
 
       user = User.find_by(uid: 112233, provider: "github")
@@ -33,9 +30,7 @@ describe UsersController do
       start_count = User.count
       user = User.new(provider: "github", uid: nil, email: "my_email@me.com", username: "me")
 
-      OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new(mock_auth_hash(user))
-
-      get auth_callback_path(:github)
+      perform_login(user)
       must_redirect_to root_path
 
       user = User.find_by(uid: nil, provider: "github")
