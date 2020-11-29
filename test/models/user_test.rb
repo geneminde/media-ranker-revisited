@@ -28,7 +28,7 @@ describe User do
 
     it "requires a unique username" do
       username = "test username"
-      user1 = User.new(username: username)
+      user1 = User.new(username: username, uid: 99999)
 
       # This must go through, so we use create!
       user1.save!

@@ -83,7 +83,7 @@ describe Work do
     it "tracks the number of votes" do
       work = Work.create!(title: "test title", category: "movie")
       4.times do |i|
-        user = User.create!(username: "user#{i}")
+        user = User.create!(username: "user#{i}", uid: rand(10000..99999))
         Vote.create!(user: user, work: work)
       end
       expect(work.vote_count).must_equal 4
@@ -97,7 +97,7 @@ describe Work do
       # Create users to do the voting
       test_users = []
       20.times do |i|
-        test_users << User.create!(username: "user#{i}")
+        test_users << User.create!(username: "user#{i}", uid: rand(10000..99999))
       end
 
       # Create media to vote upon
