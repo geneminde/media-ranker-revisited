@@ -6,6 +6,7 @@ album:
   description: This is an older album
   publication_year: 1955-11-01
   category: album
+  user: dan
 
 another_album:
   title: New Title

@@ -46,6 +46,10 @@ class WorksController < ApplicationController
         flash[:messages] = @work.errors.messages
         render :new, status: :bad_request
       end
+    else
+      flash[:status] = :failure
+      flash[:result_text] = "You must be logged in"
+      redirect_to root_path
     end
   end
 
@@ -61,9 +65,9 @@ class WorksController < ApplicationController
   end
 
   def edit
-    unless session[:user_id] == @work.user_id
+    unless @login_user.is_owner?(@work)
       flash[:status] = :failure
-      flash[:result_text] = "You must have added this work to edit it"
+      flash[:result_text] = "You must own this work to edit it"
       redirect_back fallback_location: root_path
     end
   end
@@ -82,14 +86,14 @@ class WorksController < ApplicationController
   end
 
   def destroy
-    if @login_user == @work.user
+    if @login_user.is_owner?(@work)
       @work.destroy
       flash[:status] = :success
       flash[:result_text] = "Successfully destroyed #{@media_category.singularize} #{@work.id}"
       redirect_to root_path
     else
       flash[:status] = :failure
-      flash[:result_text] = "You must have added this work to delete it"
+      flash[:result_text] = "You must own this work to delete it"
       redirect_back fallback_location: root_path
     end
   end

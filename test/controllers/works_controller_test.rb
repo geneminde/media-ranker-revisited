@@ -84,6 +84,7 @@ describe WorksController do
 
   describe "create" do
     it "creates a work with valid data for a real category" do
+      perform_login
       new_work = { work: { title: "Dirty Computer", category: "album" } }
 
       expect {
@@ -97,6 +98,7 @@ describe WorksController do
     end
 
     it "renders bad_request and does not update the DB for bogus data" do
+      perform_login
       bad_work = { work: { title: nil, category: "book" } }
 
       expect {
@@ -107,6 +109,7 @@ describe WorksController do
     end
 
     it "renders 400 bad_request for bogus categories" do
+      perform_login
       INVALID_CATEGORIES.each do |category|
         invalid_work = { work: { title: "Invalid Work", category: category } }
 
@@ -115,6 +118,16 @@ describe WorksController do
         expect(Work.find_by(title: "Invalid Work", category: category)).must_be_nil
         must_respond_with :bad_request
       end
+    end
+
+    it 'redirects to root path if no user is logged in' do
+      new_work = { work: { title: "Dirty Computer", category: "album" } }
+
+      expect {
+        post works_path, params: new_work
+      }.wont_change "Work.count"
+
+      must_respond_with :redirect
     end
   end
 
@@ -172,6 +185,8 @@ describe WorksController do
 
   describe "update" do
     it "succeeds for valid data and an extant work ID" do
+      user = users(:dan)
+      perform_login(user)
       updates = { work: { title: "Dirty Computer" } }
 
       expect {
@@ -208,8 +223,11 @@ describe WorksController do
 
   describe "destroy" do
     it "succeeds for an extant work ID" do
+      user = users(:dan)
+      perform_login(user)
+      work = Work.create!(title: "test movie", category: "movie", user: user)
       expect {
-        delete work_path(existing_work.id)
+        delete work_path(work.id)
       }.must_change "Work.count", -1
 
       must_respond_with :redirect
