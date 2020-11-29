@@ -34,6 +34,11 @@ describe WorksController do
   INVALID_CATEGORIES = ["nope", "42", "", "  ", "albumstrailingtext"]
 
   describe "index" do
+    before do
+      user = users(:dan)
+      perform_login(user)
+    end
+
     it "succeeds when there are works" do
       get works_path
 
@@ -49,13 +54,31 @@ describe WorksController do
 
       must_respond_with :success
     end
+
+    it "redirects if there are no logged-in users" do
+      delete logout_path
+
+      get works_path
+
+      must_respond_with :redirect
+    end
   end
 
   describe "new" do
-    it "succeeds" do
+    it "succeeds if a user it logged in" do
+      user = users(:dan)
+      perform_login(user)
+
       get new_work_path
 
       must_respond_with :success
+    end
+
+    it "responds with redirect for guest access" do
+      get new_work_path
+
+      must_respond_with :redirect
+      must_redirect_to root_path
     end
   end
 
@@ -96,6 +119,11 @@ describe WorksController do
   end
 
   describe "show" do
+    before do
+      user = users(:dan)
+      perform_login(user)
+    end
+
     it "succeeds for an extant work ID" do
       get work_path(existing_work.id)
 
@@ -110,9 +138,22 @@ describe WorksController do
 
       must_respond_with :not_found
     end
+
+    it "redirects if there are no logged in users" do
+      delete logout_path
+
+      get work_path(existing_work.id)
+
+      must_respond_with :redirect
+    end
   end
 
   describe "edit" do
+    before do
+      user = users(:dan)
+      perform_login(user)
+    end
+
     it "succeeds for an extant work ID" do
       get edit_work_path(existing_work.id)
 

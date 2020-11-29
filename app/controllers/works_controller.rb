@@ -2,6 +2,7 @@ class WorksController < ApplicationController
   # We should always be able to tell what category
   # of work we're dealing with
   before_action :category_from_work, except: [:root, :index, :new, :create]
+  before_action :find_user
 
   def root
     @albums = Work.best_albums
@@ -11,11 +12,24 @@ class WorksController < ApplicationController
   end
 
   def index
-    @works_by_category = Work.to_category_hash
+    if @login_user
+      @works_by_category = Work.to_category_hash
+    else
+      flash[:status] = :failure
+      flash[:result_text] = "You must be logged in to access this page"
+      redirect_to root_path
+    end
+
   end
 
   def new
-    @work = Work.new
+    if @login_user
+      @work = Work.new
+    else
+      flash[:status] = :failure
+      flash[:result_text] = "You must be logged in to add a work"
+      redirect_to root_path
+    end
   end
 
   def create
@@ -31,10 +45,18 @@ class WorksController < ApplicationController
       flash[:messages] = @work.errors.messages
       render :new, status: :bad_request
     end
+
   end
 
   def show
-    @votes = @work.votes.order(created_at: :desc)
+    if @login_user
+      @votes = @work.votes.order(created_at: :desc)
+    else
+      flash[:status] = :failure
+      flash[:result_text] = "You must be logged in to view this page"
+      redirect_to root_path
+    end
+
   end
 
   def edit
