@@ -2,7 +2,6 @@ class WorksController < ApplicationController
   # We should always be able to tell what category
   # of work we're dealing with
   before_action :category_from_work, except: [:root, :index, :new, :create]
-  before_action :find_user
 
   def root
     @albums = Work.best_albums
@@ -33,19 +32,21 @@ class WorksController < ApplicationController
   end
 
   def create
-    @work = Work.new(media_params)
-    @media_category = @work.category
-    if @work.save
-      flash[:status] = :success
-      flash[:result_text] = "Successfully created #{@media_category.singularize} #{@work.id}"
-      redirect_to work_path(@work)
-    else
-      flash[:status] = :failure
-      flash[:result_text] = "Could not create #{@media_category.singularize}"
-      flash[:messages] = @work.errors.messages
-      render :new, status: :bad_request
+    if @login_user
+      @work = Work.new(media_params)
+      @work.user = @login_user
+      @media_category = @work.category
+      if @work.save
+        flash[:status] = :success
+        flash[:result_text] = "Successfully created #{@media_category.singularize} #{@work.id}"
+        redirect_to work_path(@work)
+      else
+        flash[:status] = :failure
+        flash[:result_text] = "Could not create #{@media_category.singularize}"
+        flash[:messages] = @work.errors.messages
+        render :new, status: :bad_request
+      end
     end
-
   end
 
   def show
@@ -60,6 +61,11 @@ class WorksController < ApplicationController
   end
 
   def edit
+    unless session[:user_id] == @work.user_id
+      flash[:status] = :failure
+      flash[:result_text] = "You must have added this work to edit it"
+      redirect_back fallback_location: root_path
+    end
   end
 
   def update
@@ -76,10 +82,16 @@ class WorksController < ApplicationController
   end
 
   def destroy
-    @work.destroy
-    flash[:status] = :success
-    flash[:result_text] = "Successfully destroyed #{@media_category.singularize} #{@work.id}"
-    redirect_to root_path
+    if @login_user == @work.user
+      @work.destroy
+      flash[:status] = :success
+      flash[:result_text] = "Successfully destroyed #{@media_category.singularize} #{@work.id}"
+      redirect_to root_path
+    else
+      flash[:status] = :failure
+      flash[:result_text] = "You must have added this work to delete it"
+      redirect_back fallback_location: root_path
+    end
   end
 
   def upvote
